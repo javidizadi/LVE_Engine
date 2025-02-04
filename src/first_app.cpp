@@ -9,7 +9,7 @@
 #include <vulkan/vulkan_core.h>
 
 FirstApp::FirstApp()
-    : window(HEIGHT, WIDTH, "VULKAN FUKIN TRIANGLE"), device(window),
+    : window(WIDTH, HEIGHT, "VULKAN FUKIN TRIANGLE"), device(window),
       swapChain(device, window.getExtent()) {
   createPipelineLayout();
   createPipeline();
