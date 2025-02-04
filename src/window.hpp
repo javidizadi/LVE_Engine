@@ -25,6 +25,7 @@ public:
   ~Window();
   bool shouldClose();
   void createWindowSurface(const VkInstance &instance, VkSurfaceKHR *surface);
+  VkExtent2D getExtent();
 };
 
 } // namespace lve

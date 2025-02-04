@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include <GLFW/glfw3.h>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vulkan/vulkan_core.h>
@@ -31,6 +32,13 @@ void Window::createWindowSurface(const VkInstance &instance,
                                  VkSurfaceKHR *surface) {
   if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS)
     throw std::runtime_error("Failed to create Window Surface.");
+}
+
+VkExtent2D Window::getExtent() {
+  return {
+      .width = static_cast<uint32_t>(WIDTH),
+      .height = static_cast<uint32_t>(HEIGHT),
+  };
 }
 
 } // namespace lve

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace lve {
 
@@ -45,14 +46,6 @@ PipelineConfigInfo Pipeline::createDefaultPipelineConfig(uint32_t width,
   configInfo.scissor = VkRect2D{
       .offset = VkOffset2D{.x = 0, .y = 0},
       .extent = VkExtent2D{.width = width, .height = height},
-  };
-
-  configInfo.viewportInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-      .viewportCount = 1,
-      .pViewports = &configInfo.viewport,
-      .scissorCount = 1,
-      .pScissors = &configInfo.scissor,
   };
 
   configInfo.rasterizationInfo = {
@@ -175,13 +168,21 @@ void Pipeline::createGraphicsPipeline(Device &device,
       .pVertexAttributeDescriptions = nullptr,
   };
 
+  VkPipelineViewportStateCreateInfo viewportInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = 1,
+      .pViewports = &configInfo.viewport,
+      .scissorCount = 1,
+      .pScissors = &configInfo.scissor,
+  };
+
   VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .stageCount = 2,
       .pStages = shaderStages,
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &configInfo.inputAssemblyInfo,
-      .pViewportState = &configInfo.viewportInfo,
+      .pViewportState = &viewportInfo,
       .pRasterizationState = &configInfo.rasterizationInfo,
       .pMultisampleState = &configInfo.multisampleInfo,
       .pDepthStencilState = &configInfo.depthStencilInfo,
@@ -211,6 +212,11 @@ Pipeline::~Pipeline() {
   vkDestroyShaderModule(device.device(), vertexShaderModule, nullptr);
   vkDestroyShaderModule(device.device(), fragmentShaderModule, nullptr);
   vkDestroyPipeline(device.device(), graphicsPipeline, nullptr);
+}
+
+void Pipeline::bind(VkCommandBuffer commandBuffer) {
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    graphicsPipeline);
 }
 
 } // namespace lve
