@@ -1,9 +1,12 @@
 #include "pipeline.hpp"
+#include "model.hpp"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+
 #include <vulkan/vulkan_core.h>
 
 namespace lve {
@@ -160,12 +163,20 @@ void Pipeline::createGraphicsPipeline(Device &device,
       .pSpecializationInfo = nullptr,
   };
 
+  auto bindingDescriptions = Model::Vertex::getBindingDescriptions();
+  auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-      .vertexBindingDescriptionCount = 0,
-      .pVertexBindingDescriptions = nullptr,
-      .vertexAttributeDescriptionCount = 0,
-      .pVertexAttributeDescriptions = nullptr,
+
+      .vertexBindingDescriptionCount =
+          static_cast<uint32_t>(bindingDescriptions.size()),
+
+      .pVertexBindingDescriptions = bindingDescriptions.data(),
+
+      .vertexAttributeDescriptionCount =
+          static_cast<uint32_t>(attributeDescriptions.size()),
+
+      .pVertexAttributeDescriptions = attributeDescriptions.data(),
   };
 
   VkPipelineViewportStateCreateInfo viewportInfo{

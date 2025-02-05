@@ -11,6 +11,7 @@
 FirstApp::FirstApp()
     : window(WIDTH, HEIGHT, "VULKAN FUKIN TRIANGLE"), device(window),
       swapChain(device, window.getExtent()) {
+  loadModels();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
@@ -99,7 +100,9 @@ void FirstApp::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     pipeline->bind(commandBuffers[i]);
-    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+    // vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+    model->bind(commandBuffers[i]);
+    model->draw(commandBuffers[i]);
 
     vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -120,4 +123,14 @@ void FirstApp::drawFrame() {
   if (result != VK_SUCCESS) {
     throw std::runtime_error("Failed to preset swap chain image.");
   }
+}
+
+void FirstApp::loadModels() {
+  std::vector<lve::Model::Vertex> vertices{
+      {{-0.5, 0}},
+      {{0.5, 0}},
+      {{0, -0.5}},
+  };
+
+  model = std::make_unique<lve::Model>(device, vertices);
 }
