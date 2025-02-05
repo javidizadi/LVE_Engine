@@ -1,1 +1,6 @@
-**/a.out
+**/*.out
+**/*.o
+**/.vscode
+bin/
+obj/
+debug/
