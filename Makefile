@@ -2,7 +2,7 @@
 CFLAGS := -lglfw -lvulkan -lglm -lwayland-client 
 CXX ?= g++
 DBGFLAGS := -ggdb
-COBJFLAGS := $(CFLAGS) -c
+COBJFLAGS := -c
 
 # path macros
 BIN_PATH := bin
@@ -31,7 +31,7 @@ CLEAN_LIST := $(TARGET) \
 			  $(DISTCLEAN_LIST)
 
 # default rule
-default: clean makedir all
+default: makedir all
 
 # non-phony targets
 $(TARGET): $(OBJ)
