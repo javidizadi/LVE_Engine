@@ -1,4 +1,5 @@
 #include "first_app.hpp"
+#include "model.hpp"
 #include "pipeline.hpp"
 #include "swap_chain.hpp"
 #include <array>
@@ -24,7 +25,6 @@ FirstApp::~FirstApp() {
 void FirstApp::run() {
   while (!window.shouldClose()) {
     glfwPollEvents();
-
     drawFrame();
   }
 
@@ -53,8 +53,8 @@ void FirstApp::createPipeline() {
   pipelineConfig.pipelineLayout = pipelineLayout;
 
   pipeline = std::make_unique<lve::Pipeline>(
-      device, "../shaders/simple_triangle.vert.spv",
-      "../shaders/simple_triangle.frag.spv", pipelineConfig);
+      device, "./shaders/simple_triangle.vert.spv",
+      "./shaders/simple_triangle.frag.spv", pipelineConfig);
 }
 
 void FirstApp::createCommandBuffers() {
@@ -100,7 +100,6 @@ void FirstApp::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     pipeline->bind(commandBuffers[i]);
-    // vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
     model->bind(commandBuffers[i]);
     model->draw(commandBuffers[i]);
 
@@ -125,12 +124,39 @@ void FirstApp::drawFrame() {
   }
 }
 
+void createNextSierpinski(std::vector<lve::Model::Vertex> &model) {
+
+  uint32_t countOfVertciesToAdd = (model.size() - 1) * 3;
+  std::array<lve::Model::Vertex, 9> insertChunk;
+  std::vector<lve::Model::Vertex> newModel(model.size() + countOfVertciesToAdd);
+
+  for (size_t i = 0; i < model.size(); i += 3) {
+    auto A = model[i];
+    auto B = model[i + 1];
+    auto C = model[i + 2];
+
+    auto midAB = (A + B) / 2.0f;
+    auto midAC = (A + C) / 2.0f;
+    auto midBC = (B + C) / 2.0f;
+
+    insertChunk = {A, midAB, midAC, midAB, B, midBC, midAC, midBC, C};
+
+    newModel.insert(newModel.end(), insertChunk.begin(), insertChunk.end());
+  }
+
+  model = newModel;
+}
+
 void FirstApp::loadModels() {
   std::vector<lve::Model::Vertex> vertices{
-      {{-0.5, 0}},
-      {{0.5, 0}},
-      {{0, -0.5}},
+      {{-1.0, 1.0}},
+      {{0, -1.0}},
+      {{1, 1}},
   };
+
+  for (int i = 0; i < 5; i++) {
+    createNextSierpinski(vertices);
+  }
 
   model = std::make_unique<lve::Model>(device, vertices);
 }

@@ -21,6 +21,9 @@ public:
 
     static std::vector<VkVertexInputAttributeDescription>
     getAttributeDescriptions();
+
+    Vertex operator+(const Vertex &right);
+    Vertex operator/(float d);
   };
 
   Model(Device &device, const std::vector<Vertex> &vertices);

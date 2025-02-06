@@ -71,4 +71,12 @@ Model::Vertex::getAttributeDescriptions() {
   return attributeDescriptions;
 }
 
+Model::Vertex Model::Vertex::operator+(const Vertex &right) {
+  return Model::Vertex{.position = this->position + right.position};
+}
+
+Model::Vertex Model::Vertex::operator/(float d) {
+  return Model::Vertex{.position = this->position / glm::vec2{d, d}};
+}
+
 } // namespace lve

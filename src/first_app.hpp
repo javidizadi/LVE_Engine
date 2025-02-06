@@ -13,8 +13,8 @@
 
 class FirstApp {
 private:
-  static constexpr int HEIGHT = 500;
-  static constexpr int WIDTH = 500;
+  static constexpr int HEIGHT = 800;
+  static constexpr int WIDTH = 800;
 
   lve::Window window;
   lve::Device device;
