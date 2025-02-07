@@ -53,8 +53,8 @@ void FirstApp::createPipeline() {
   pipelineConfig.pipelineLayout = pipelineLayout;
 
   pipeline = std::make_unique<lve::Pipeline>(
-      device, "../shaders/simple_triangle.vert.spv",
-      "../shaders/simple_triangle.frag.spv", pipelineConfig);
+      device, "shaders/simple_triangle.vert.spv",
+      "shaders/simple_triangle.frag.spv", pipelineConfig);
 }
 
 void FirstApp::createCommandBuffers() {
