@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "first_app.hpp"
 #include "model.hpp"
 #include "pipeline.hpp"
@@ -124,27 +126,34 @@ void FirstApp::drawFrame() {
   }
 }
 
-void createNextSierpinski(std::vector<lve::Model::Vertex> &model) {
+void createNextSierpinski(std::vector<lve::Model::Vertex> &model, size_t n) {
 
-  uint32_t countOfVertciesToAdd = (model.size() - 1) * 3;
-  std::array<lve::Model::Vertex, 9> insertChunk;
-  std::vector<lve::Model::Vertex> newModel(model.size() + countOfVertciesToAdd);
+  model.reserve(std::pow(3, n + 1));
 
-  for (size_t i = 0; i < model.size(); i += 3) {
-    auto A = model[i];
-    auto B = model[i + 1];
-    auto C = model[i + 2];
+  for (size_t j = 0; j < n; j++) {
 
-    auto midAB = (A + B) / 2.0f;
-    auto midAC = (A + C) / 2.0f;
-    auto midBC = (B + C) / 2.0f;
+    auto triangleCount = model.size() / 3;
 
-    insertChunk = {A, midAB, midAC, midAB, B, midBC, midAC, midBC, C};
+    auto A = model.begin();
+    auto B = A + 1;
+    auto C = A + 2;
 
-    newModel.insert(newModel.end(), insertChunk.begin(), insertChunk.end());
+    for (size_t i = 0; i < triangleCount; i++) {
+      auto midAB = (*A + *B) / 2.0f;
+      auto midAC = (*A + *C) / 2.0f;
+      auto midBC = (*B + *C) / 2.0f;
+
+      auto pos = model.insert(A + 1, {midAB, midAC, midAB});
+      B = pos + 3;
+      pos = model.insert(B + 1, {midBC, midAC, midBC});
+
+      A = pos + 4;
+      B = A + 1;
+      C = A + 2;
+    }
+
+    std::cout << "N: " << j + 1 << std::endl;
   }
-
-  model = newModel;
 }
 
 void FirstApp::loadModels() {
@@ -154,9 +163,7 @@ void FirstApp::loadModels() {
       {{1, 1}},
   };
 
-  for (int i = 0; i < 5; i++) {
-    createNextSierpinski(vertices);
-  }
+  createNextSierpinski(vertices, 7);
 
   model = std::make_unique<lve::Model>(device, vertices);
 }
