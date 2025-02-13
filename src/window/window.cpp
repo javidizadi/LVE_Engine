@@ -1,27 +1,39 @@
 #include "window.hpp"
-#include <GLFW/glfw3.h>
+
+#include "window_event_interface.hpp"
+#include "window_event_manager.hpp"
+
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vulkan/vulkan_core.h>
 
 namespace lve {
 
-Window::Window(int width, int height, std::string window_name)
-    : windowName(window_name), WIDTH(width), HEIGHT(height) {
+Window::Window(int width, int height, std::string name,
+               WindowEventInterface *eventInterface)
+    : windowName(name), width(width), height(height) {
   initWindow();
+  initEventManager(eventInterface);
 }
 
 void Window::initWindow() {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
   window =
-      glfwCreateWindow(WIDTH, HEIGHT, windowName.c_str(), nullptr, nullptr);
+      glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+}
+
+void Window::initEventManager(WindowEventInterface *eventInterface) {
+  eventManager = new WindowEventManager(window, eventInterface);
+  glfwSetWindowUserPointer(window, eventManager);
 }
 
 Window::~Window() {
+  delete eventManager;
   glfwDestroyWindow(window);
   glfwTerminate();
 }
@@ -36,8 +48,8 @@ void Window::createWindowSurface(const VkInstance &instance,
 
 VkExtent2D Window::getExtent() {
   return {
-      .width = static_cast<uint32_t>(WIDTH),
-      .height = static_cast<uint32_t>(HEIGHT),
+      .width = static_cast<uint32_t>(width),
+      .height = static_cast<uint32_t>(height),
   };
 }
 

@@ -1,15 +1,17 @@
 #include "first_app.hpp"
 #include "pipeline.hpp"
 #include "swap_chain.hpp"
+#include "window/window.hpp"
 #include <array>
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_core.h>
 
 FirstApp::FirstApp()
-    : window(WIDTH, HEIGHT, "VULKAN FUKIN TRIANGLE"), device(window),
+    : window(WIDTH, HEIGHT, "VULKAN FUKIN TRIANGLE", this), device(window),
       swapChain(device, window.getExtent()) {
   loadModels();
   createPipelineLayout();

@@ -4,14 +4,14 @@
 #include "model.hpp"
 #include "pipeline.hpp"
 #include "swap_chain.hpp"
-#include "window.hpp"
+#include "window/window.hpp"
 
 #include <memory>
 #include <vector>
 
 #include <vulkan/vulkan_core.h>
 
-class FirstApp {
+class FirstApp : private lve::WindowEventInterface {
 private:
   static constexpr int HEIGHT = 800;
   static constexpr int WIDTH = 800;

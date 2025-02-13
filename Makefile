@@ -19,9 +19,9 @@ TARGET := $(BIN_PATH)/$(TARGET_NAME)
 TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
 
 # src files & obj files
-SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.cpp*)))
-OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
-OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
+SRC := $(shell find $(SRC_PATH) -name '*.cpp')
+OBJ := $(patsubst $(SRC_PATH)/%.cpp, $(OBJ_PATH)/%.o, $(SRC))
+OBJ_DEBUG := $(patsubst $(SRC_PATH)/%.cpp, $(DBG_PATH)/%.o, $(SRC))
 
 # clean files list
 DISTCLEAN_LIST := $(OBJ) \
@@ -37,10 +37,12 @@ default: makedir all
 $(TARGET): $(OBJ)
 	$(CXX) -o $@ $(OBJ) $(CFLAGS)
 
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp*
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(COBJFLAGS) -o $@ $<
 
-$(DBG_PATH)/%.o: $(SRC_PATH)/%.cpp*
+$(DBG_PATH)/%.o: $(SRC_PATH)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(COBJFLAGS) $(DBGFLAGS) -o $@ $<
 
 $(TARGET_DEBUG): $(OBJ_DEBUG)
@@ -66,4 +68,3 @@ clean:
 distclean:
 	@echo CLEAN $(DISTCLEAN_LIST)
 	@rm -f $(DISTCLEAN_LIST)
-
