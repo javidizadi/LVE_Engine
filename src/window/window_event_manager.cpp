@@ -29,6 +29,12 @@ void WindowEventManager::windowResizedCallback(GLFWwindow *window, int width,
   instance->interface->onWindowResized(width, height);
 }
 
+void WindowEventManager::mouseButtonCallback(GLFWwindow *window, int button,
+                                             int action, int mods) {
+  auto instance = getWindowManagerInstance(glfwGetWindowUserPointer(window));
+  instance->interface->onMouseButton(button, action, mods);
+}
+
 void WindowEventManager::enableEvent(WindowEvents event) {
   switch (event) {
   case WindowEvents::onWindowResized:
@@ -41,6 +47,10 @@ void WindowEventManager::enableEvent(WindowEvents event) {
 
   case WindowEvents::onFramebufferResized:
     glfwSetFramebufferSizeCallback(glfwWindow, framebuffferResizedCallback);
+    break;
+
+  case WindowEvents::onMouseButton:
+    glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
     break;
   }
 }
@@ -57,6 +67,10 @@ void WindowEventManager::disableEvent(WindowEvents event) {
 
   case WindowEvents::onFramebufferResized:
     glfwSetFramebufferSizeCallback(glfwWindow, nullptr);
+    break;
+
+  case WindowEvents::onMouseButton:
+    glfwSetMouseButtonCallback(glfwWindow, nullptr);
     break;
   }
 }
