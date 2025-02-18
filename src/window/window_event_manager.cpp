@@ -7,32 +7,39 @@ WindowEventManager::WindowEventManager(GLFWwindow *glfwWindow,
                                        WindowEventInterface *interface)
     : glfwWindow(glfwWindow), interface(interface) {}
 
-WindowEventManager *WindowEventManager::getWindowManagerInstance(void *p) {
-  return static_cast<WindowEventManager *>(p);
+WindowEventManager *
+WindowEventManager::getWindowManagerInstance(GLFWwindow *window) {
+  void *eventManagerPtr = glfwGetWindowUserPointer(window);
+  return (WindowEventManager *)eventManagerPtr;
 }
 
 void WindowEventManager::framebuffferResizedCallback(GLFWwindow *window,
                                                      int width, int height) {
-  auto instance = getWindowManagerInstance(glfwGetWindowUserPointer(window));
+  auto instance = getWindowManagerInstance(window);
   instance->interface->onFramebufferResized(width, height);
 }
 
 void WindowEventManager::keyCallback(GLFWwindow *window, int key, int scancode,
                                      int action, int mods) {
-  auto instance = getWindowManagerInstance(glfwGetWindowUserPointer(window));
+  auto instance = getWindowManagerInstance(window);
   instance->interface->onKeyPress(key, scancode, action, mods);
 }
 
 void WindowEventManager::windowResizedCallback(GLFWwindow *window, int width,
                                                int height) {
-  auto instance = getWindowManagerInstance(glfwGetWindowUserPointer(window));
+  auto instance = getWindowManagerInstance(window);
   instance->interface->onWindowResized(width, height);
 }
 
 void WindowEventManager::mouseButtonCallback(GLFWwindow *window, int button,
                                              int action, int mods) {
-  auto instance = getWindowManagerInstance(glfwGetWindowUserPointer(window));
+  auto instance = getWindowManagerInstance(window);
   instance->interface->onMouseButton(button, action, mods);
+}
+
+void WindowEventManager::windowRefreshCallback(GLFWwindow *window) {
+  auto instance = getWindowManagerInstance(window);
+  instance->interface->onWindowRefresh();
 }
 
 void WindowEventManager::enableEvent(WindowEvents event) {
@@ -51,6 +58,10 @@ void WindowEventManager::enableEvent(WindowEvents event) {
 
   case WindowEvents::onMouseButton:
     glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
+    break;
+
+  case WindowEvents::onWindowRefresh:
+    glfwSetWindowRefreshCallback(glfwWindow, windowRefreshCallback);
     break;
   }
 }
@@ -71,6 +82,10 @@ void WindowEventManager::disableEvent(WindowEvents event) {
 
   case WindowEvents::onMouseButton:
     glfwSetMouseButtonCallback(glfwWindow, nullptr);
+    break;
+
+  case WindowEvents::onWindowRefresh:
+    glfwSetWindowRefreshCallback(glfwWindow, nullptr);
     break;
   }
 }
