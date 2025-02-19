@@ -1,4 +1,5 @@
 #include "watchdog.hpp"
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <mutex>
@@ -6,7 +7,8 @@
 
 Watchdog::Watchdog(std::function<void(void *)> callback,
                    std::chrono::duration<double> timeout)
-    : _callback(callback), _timeout(timeout), _userPtr(nullptr) {}
+    : _running(false), _callback(callback), _timeout(timeout),
+      _userPtr(nullptr) {}
 
 Watchdog::~Watchdog() {
   if (_thread.joinable())
@@ -14,13 +16,15 @@ Watchdog::~Watchdog() {
 }
 
 void Watchdog::start() {
-  if (!_running)
-    _running = true;
-  _thread = std::thread(&Watchdog::_watchdogLoop, this);
+  bool expected = false;
+  if (_running.compare_exchange_weak(expected, true,
+                                     std::memory_order::memory_order_relaxed)) {
+    _thread = std::thread(&Watchdog::_watchdogLoop, this);
+  }
 }
 
 void Watchdog::stop() {
-  _running = false;
+  _running.store(false, std::memory_order::memory_order_release);
   _cv.notify_all();
 
   if (_thread.joinable())
@@ -37,7 +41,7 @@ void Watchdog::reset() {
 
 void Watchdog::_watchdogLoop() {
   std::unique_lock<std::mutex> lock(_mutex);
-  while (_running) {
+  while (_running.load(std::memory_order::memory_order_acquire)) {
 
     auto now = std::chrono::steady_clock::now();
 
@@ -49,6 +53,8 @@ void Watchdog::_watchdogLoop() {
 
     _cv.wait_for(lock, _timeout);
   }
+
+  _running.store(false, std::memory_order::memory_order_relaxed);
 }
 
 void Watchdog::setUesrPointer(void *ptr) { _userPtr = ptr; }
