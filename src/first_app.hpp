@@ -4,6 +4,7 @@
 #include "model.hpp"
 #include "pipeline.hpp"
 #include "swap_chain.hpp"
+#include "watchdog.hpp"
 #include "window/window.hpp"
 
 #include <memory>
@@ -13,8 +14,11 @@
 
 class FirstApp : private lve::WindowEventInterface {
 private:
-  static constexpr int HEIGHT = 800;
-  static constexpr int WIDTH = 800;
+  int height = 800;
+  int width = 800;
+
+  bool resizeInProgress;
+  Watchdog resizeWatchdog;
 
   lve::Window window;
   lve::Device device;
@@ -25,12 +29,17 @@ private:
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;
 
+  void waitForResize();
+  static void resizeWatchdogCallback(void *);
+
   void loadModels();
   void createSwapChain();
   void createPipelineLayout();
   void createPipeline();
   void createCommandBuffers();
   void drawFrame();
+
+  void onFramebufferResized(int width, int height) override;
 
 public:
   FirstApp();

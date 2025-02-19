@@ -2,21 +2,25 @@
 #include "pipeline.hpp"
 #include "swap_chain.hpp"
 #include "window/window.hpp"
+#include "window/window_event_manager.hpp"
+#include <GLFW/glfw3.h>
 #include <array>
 #include <cstdint>
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_core.h>
 
 FirstApp::FirstApp()
-    : window(WIDTH, HEIGHT, "VULKAN FUKIN TRIANGLE", this), device(window),
-      swapChain(device, window.getExtent()) {
+    : window(width, height, "VULKAN FUKIN TRIANGLE", this), device(window),
+      swapChain(device, window.getExtent()),
+      resizeWatchdog(resizeWatchdogCallback, std::chrono::milliseconds(1000)),
+      resizeInProgress(false) {
   loadModels();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
+  resizeWatchdog.setUesrPointer(this);
 }
 
 FirstApp::~FirstApp() {
@@ -24,14 +28,41 @@ FirstApp::~FirstApp() {
 }
 
 void FirstApp::run() {
+
+  window.eventManager->enableEvent(lve::WindowEvents::onFramebufferResized);
+
   while (!window.shouldClose()) {
     glfwPollEvents();
-
+    waitForResize();
     drawFrame();
   }
 
   vkDeviceWaitIdle(device.device());
 }
+
+void FirstApp::onFramebufferResized(int width, int height) {
+  this->width = width;
+  this->height = height;
+
+  resizeWatchdog.start();
+  resizeWatchdog.reset();
+  resizeInProgress = true;
+}
+
+void FirstApp::waitForResize() {
+  if (!resizeInProgress)
+    return;
+
+  while (resizeInProgress)
+    glfwPollEvents();
+
+  resizeWatchdog.stop();
+}
+
+void FirstApp::resizeWatchdogCallback(void *p) {
+  auto instance = (FirstApp *)(p);
+  instance->resizeInProgress = false;
+};
 
 void FirstApp::createPipelineLayout() {
 
