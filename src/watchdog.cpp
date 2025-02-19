@@ -4,9 +4,9 @@
 #include <mutex>
 #include <thread>
 
-Watchdog::Watchdog(std::function<void()> callback,
+Watchdog::Watchdog(std::function<void(void *)> callback,
                    std::chrono::duration<double> timeout)
-    : _callback(callback), _timeout(timeout) {}
+    : _callback(callback), _timeout(timeout), _userPtr(nullptr) {}
 
 Watchdog::~Watchdog() {
   if (_thread.joinable())
@@ -43,10 +43,14 @@ void Watchdog::_watchdogLoop() {
 
     if (now - _lastReset > _timeout) {
       if (_callback)
-        _callback();
+        _callback(_userPtr);
       break;
     }
 
     _cv.wait_for(lock, _timeout);
   }
 }
+
+void Watchdog::setUesrPointer(void *ptr) { _userPtr = ptr; }
+
+void *Watchdog::getUserPointer() { return _userPtr; }
