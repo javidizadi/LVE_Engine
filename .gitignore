@@ -1,6 +1,2 @@
-**/*.out
-**/*.o
 **/.vscode
-bin/
-obj/
-debug/
+/build/
