@@ -16,7 +16,7 @@ find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 
 # Find GLFW using pkg-config if not found by CMake
-find_package(glfw3 QUIET)
+find_package(glfw3 REQUIRED)
 if(NOT glfw3_FOUND)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GLFW REQUIRED glfw3)
@@ -39,7 +39,7 @@ target_include_directories(LVE_Engine PRIVATE
 
 # Link libraries
 target_link_libraries(LVE_Engine PRIVATE
-    ${GLFW_LIBRARIES}
+    glfw
     Vulkan::Vulkan
     wayland-client
 )
