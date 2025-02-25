@@ -14,20 +14,11 @@ endif()
 # Find dependencies
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
-
-# Find GLFW using pkg-config if not found by CMake
 find_package(glfw3 REQUIRED)
-if(NOT glfw3_FOUND)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GLFW REQUIRED glfw3)
-endif()
 
 # Main executable
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 add_executable(LVE_Engine ${SOURCES})
-
-# Add dependencies
-# add_dependencies(LVE_Engine compile_shaders)
 
 # Include directories
 target_include_directories(LVE_Engine PRIVATE
@@ -43,6 +34,12 @@ target_link_libraries(LVE_Engine PRIVATE
     Vulkan::Vulkan
     wayland-client
 )
+
+# Test configure
+enable_testing()
+find_package(doctest REQUIRED)
+add_executable(watchdog_test tests/watchdog_test.cpp src/watchdog.cpp)
+add_test(NAME watchdog COMMAND watchdog_test)
 
 # Debug flags
 target_compile_options(LVE_Engine PRIVATE
