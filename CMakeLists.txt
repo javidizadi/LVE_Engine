@@ -38,8 +38,11 @@ target_link_libraries(LVE_Engine PRIVATE
 # Test configure
 enable_testing()
 find_package(doctest REQUIRED)
+
 add_executable(watchdog_test tests/watchdog_test.cpp src/watchdog.cpp)
 add_test(NAME watchdog COMMAND watchdog_test)
+set_tests_properties(watchdog PROPERTIES TIMEOUT 30)
+
 
 # Debug flags
 target_compile_options(LVE_Engine PRIVATE
