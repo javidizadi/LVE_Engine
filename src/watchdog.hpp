@@ -29,6 +29,6 @@ public:
   void stop();
   void reset();
 
-  void setUesrPointer(void *);
+  void setUserPointer(void *);
   void *getUserPointer();
 };

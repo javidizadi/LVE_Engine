@@ -64,7 +64,7 @@ TEST_CASE("Watchdog handles user pointer correctly") {
       [&](void *ptr) { receivedPointer = static_cast<int *>(ptr); },
       std::chrono::milliseconds(100));
 
-  watchdog.setUesrPointer(&userData);
+  watchdog.setUserPointer(&userData);
   watchdog.start();
   std::this_thread::sleep_for(
       std::chrono::milliseconds(150)); // Wait longer than timeout.

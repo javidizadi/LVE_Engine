@@ -57,6 +57,6 @@ void Watchdog::_watchdogLoop() {
   _running.store(false, std::memory_order_relaxed);
 }
 
-void Watchdog::setUesrPointer(void *ptr) { _userPtr = ptr; }
+void Watchdog::setUserPointer(void *ptr) { _userPtr = ptr; }
 
 void *Watchdog::getUserPointer() { return _userPtr; }

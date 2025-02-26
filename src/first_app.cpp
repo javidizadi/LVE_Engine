@@ -20,7 +20,7 @@ FirstApp::FirstApp()
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
-  resizeWatchdog.setUesrPointer(this);
+  resizeWatchdog.setUserPointer(this);
 }
 
 FirstApp::~FirstApp() {
