@@ -1,9 +1,6 @@
-
 #include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <functional>
-#include <mutex>
 #include <thread>
 
 class Watchdog {
@@ -13,13 +10,12 @@ private:
   std::atomic_bool _running;
   const std::chrono::duration<double> _timeout;
   std::chrono::steady_clock::time_point _lastReset;
-  std::mutex _mutex;
-  std::thread _thread;
-  std::condition_variable _cv;
+  std::jthread _thread;
 
   void *_userPtr;
 
-  void _watchdogLoop();
+  void _watchdogLoop(std::stop_token st);
+  void _watchdogTick();
 
 public:
   Watchdog(std::function<void(void *)> callback,

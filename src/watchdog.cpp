@@ -1,60 +1,58 @@
 #include "watchdog.hpp"
 #include <atomic>
 #include <chrono>
+#include <cstdio>
+#include <ctime>
 #include <functional>
-#include <mutex>
+#include <stop_token>
 #include <thread>
 
 Watchdog::Watchdog(std::function<void(void *)> callback,
                    std::chrono::duration<double> timeout)
-    : _running(false), _callback(callback), _timeout(timeout),
-      _userPtr(nullptr) {}
+    : _timeout(timeout) {
+  _running.store(false);
+  _callback = callback;
+  _userPtr = nullptr;
+  _thread = std::jthread([this](std::stop_token st) { _watchdogLoop(st); });
+}
 
 Watchdog::~Watchdog() {
+  _thread.request_stop();
   if (_thread.joinable())
     _thread.join();
 }
 
 void Watchdog::start() {
-  bool expected = false;
-  if (_running.compare_exchange_weak(expected, true,
-                                     std::memory_order_relaxed)) {
-    _thread = std::thread(&Watchdog::_watchdogLoop, this);
-  }
+  _lastReset = std::chrono::steady_clock::now();
+  _running.store(true, std::memory_order_release);
 }
 
-void Watchdog::stop() {
-  _running.store(false, std::memory_order_release);
-  _cv.notify_all();
+void Watchdog::stop() { _running.store(false, std::memory_order_release); }
 
-  if (_thread.joinable())
-    _thread.join();
-}
+void Watchdog::reset() { _lastReset = std::chrono::steady_clock::now(); }
 
-void Watchdog::reset() {
-  {
-    std::lock_guard<std::mutex> lock(_mutex);
-    _lastReset = std::chrono::steady_clock::now();
-  }
-  _cv.notify_all();
-}
+void Watchdog::_watchdogLoop(std::stop_token st) {
+  while (true) {
+    if (st.stop_requested())
+      return;
 
-void Watchdog::_watchdogLoop() {
-  std::unique_lock<std::mutex> lock(_mutex);
-  while (_running.load(std::memory_order_acquire)) {
+    while (_running.load(std::memory_order_acquire)) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
-    auto now = std::chrono::steady_clock::now();
+      if (st.stop_requested())
+        return;
 
-    if (now - _lastReset > _timeout) {
-      if (_callback)
-        _callback(_userPtr);
-      break;
+      _watchdogTick();
     }
-
-    _cv.wait_for(lock, _timeout);
   }
+}
 
-  _running.store(false, std::memory_order_relaxed);
+void Watchdog::_watchdogTick() {
+  auto now = std::chrono::steady_clock::now();
+  if (now - _lastReset >= _timeout) {
+    _callback(_userPtr);
+    stop();
+  }
 }
 
 void Watchdog::setUserPointer(void *ptr) { _userPtr = ptr; }
