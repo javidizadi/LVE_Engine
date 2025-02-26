@@ -1,7 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN // Generate main() for doctest
 #include "../src/watchdog.hpp"
 #include "doctest/doctest.h"
-#include <atomic>
 #include <chrono>
 #include <thread>
 
