@@ -1,2 +1,5 @@
 #!/bin/bash
-make -C build test ARGS=--output-on-failure -j8
+set -e
+bash ./build.sh -j4
+cd build
+ctest --output-on-failure $1
