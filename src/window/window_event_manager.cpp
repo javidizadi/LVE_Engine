@@ -1,13 +1,17 @@
 #include "window_event_manager.hpp"
 #include "window_event_interface.hpp"
 #include <GLFW/glfw3.h>
+#include <chrono>
 
 namespace lve {
 WindowEventManager::WindowEventManager(GLFWwindow *glfwWindow,
                                        WindowEventInterface *interface)
-    : glfwWindow(glfwWindow), interface(interface) {}
+    : glfwWindow(glfwWindow), interface(interface),
+      resizeWatchdog(resizeWatchdogCallback, std::chrono::seconds(1)) {
+  resizeWatchdog.setUserPointer(interface);
+}
 
-WindowEventManager *
+constexpr WindowEventManager *
 WindowEventManager::getWindowManagerInstance(GLFWwindow *window) {
   void *eventManagerPtr = glfwGetWindowUserPointer(window);
   return (WindowEventManager *)eventManagerPtr;
@@ -16,6 +20,7 @@ WindowEventManager::getWindowManagerInstance(GLFWwindow *window) {
 void WindowEventManager::framebuffferResizedCallback(GLFWwindow *window,
                                                      int width, int height) {
   auto instance = getWindowManagerInstance(window);
+  instance->resizeWatchdog.start();
   instance->interface->onFramebufferResized(width, height);
 }
 
@@ -42,6 +47,11 @@ void WindowEventManager::windowRefreshCallback(GLFWwindow *window) {
   instance->interface->onWindowRefresh();
 }
 
+void WindowEventManager::resizeWatchdogCallback(void *userPtr) {
+  auto instance = (WindowEventManager *)userPtr;
+  instance->interface->onFramebufferResizingDone();
+}
+
 void WindowEventManager::enableEvent(WindowEvents event) {
   switch (event) {
   case WindowEvents::onWindowResized:
@@ -53,6 +63,7 @@ void WindowEventManager::enableEvent(WindowEvents event) {
     break;
 
   case WindowEvents::onFramebufferResized:
+    resizeWatchdog.setUserPointer(this);
     glfwSetFramebufferSizeCallback(glfwWindow, framebuffferResizedCallback);
     break;
 
