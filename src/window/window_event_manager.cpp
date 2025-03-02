@@ -11,7 +11,7 @@ WindowEventManager::WindowEventManager(GLFWwindow *glfwWindow,
   resizeWatchdog.setUserPointer(interface);
 }
 
-constexpr WindowEventManager *
+WindowEventManager *
 WindowEventManager::getWindowManagerInstance(GLFWwindow *window) {
   void *eventManagerPtr = glfwGetWindowUserPointer(window);
   return (WindowEventManager *)eventManagerPtr;

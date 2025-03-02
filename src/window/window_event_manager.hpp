@@ -23,8 +23,7 @@ private:
   Watchdog resizeWatchdog;
 
   static void resizeWatchdogCallback(void *);
-  constexpr static WindowEventManager *
-  getWindowManagerInstance(GLFWwindow *window);
+  static WindowEventManager *getWindowManagerInstance(GLFWwindow *window);
 
   static void framebuffferResizedCallback(GLFWwindow *window, int width,
                                           int height);
