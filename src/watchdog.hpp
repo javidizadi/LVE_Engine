@@ -1,5 +1,8 @@
+#pragma once
+
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <functional>
 #include <thread>
 
@@ -11,6 +14,8 @@ private:
   const std::chrono::duration<double> _timeout;
   std::chrono::steady_clock::time_point _lastReset;
   std::jthread _thread;
+  std::mutex _mutex;
+  std::condition_variable_any _stopCv;
 
   void *_userPtr;
 

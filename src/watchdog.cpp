@@ -4,13 +4,14 @@
 #include <cstdio>
 #include <ctime>
 #include <functional>
+#include <mutex>
 #include <stop_token>
 #include <thread>
 
 Watchdog::Watchdog(std::function<void(void *)> callback,
                    std::chrono::duration<double> timeout)
     : _timeout(timeout) {
-  _running.store(false);
+  _running.store(false, std::memory_order_release);
   _callback = callback;
   _userPtr = nullptr;
   _thread = std::jthread([this](std::stop_token st) { _watchdogLoop(st); });
@@ -18,6 +19,7 @@ Watchdog::Watchdog(std::function<void(void *)> callback,
 
 Watchdog::~Watchdog() {
   _thread.request_stop();
+  _stopCv.notify_one();
   if (_thread.joinable())
     _thread.join();
 }
@@ -25,6 +27,7 @@ Watchdog::~Watchdog() {
 void Watchdog::start() {
   _lastReset = std::chrono::steady_clock::now();
   _running.store(true, std::memory_order_release);
+  _stopCv.notify_one();
 }
 
 void Watchdog::stop() { _running.store(false, std::memory_order_release); }
@@ -32,7 +35,12 @@ void Watchdog::stop() { _running.store(false, std::memory_order_release); }
 void Watchdog::reset() { _lastReset = std::chrono::steady_clock::now(); }
 
 void Watchdog::_watchdogLoop(std::stop_token st) {
+  std::unique_lock lock(_mutex);
+
   while (true) {
+    _stopCv.wait(lock, st,
+                 [this] { return _running.load(std::memory_order_acquire); });
+
     if (st.stop_requested())
       return;
 
