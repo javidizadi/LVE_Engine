@@ -7,7 +7,7 @@ namespace lve {
 WindowEventManager::WindowEventManager(GLFWwindow *glfwWindow,
                                        WindowEventInterface *interface)
     : glfwWindow(glfwWindow), interface(interface),
-      resizeWatchdog(resizeWatchdogCallback, std::chrono::seconds(1)) {
+      resizeWatchdog(resizeWatchdogCallback, std::chrono::milliseconds(100)) {
   resizeWatchdog.setUserPointer(interface);
 }
 
