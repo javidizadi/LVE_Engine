@@ -1,7 +1,5 @@
 #pragma once
 
-#define NDEBUG // TEMP: DISTRO VALIDATION LAYER BROKED
-
 #include "window/window.hpp"
 
 // std lib headers
