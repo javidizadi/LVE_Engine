@@ -6,7 +6,7 @@
 
 TEST_CASE("Watchdog starts and stops correctly") {
   bool callbackCalled = false;
-  Watchdog watchdog([&](void *) { callbackCalled = true; },
+  Watchdog watchdog([&](void *) { callbackCalled = true; }, nullptr,
                     std::chrono::milliseconds(100));
 
   SUBCASE("Start and stop without timeout") {
@@ -30,7 +30,7 @@ TEST_CASE("Watchdog starts and stops correctly") {
 
 TEST_CASE("Watchdog reset works correctly") {
   bool callbackCalled = false;
-  Watchdog watchdog([&](void *) { callbackCalled = true; },
+  Watchdog watchdog([&](void *) { callbackCalled = true; }, nullptr,
                     std::chrono::milliseconds(100));
 
   SUBCASE("Reset before timeout") {
@@ -60,10 +60,9 @@ TEST_CASE("Watchdog handles user pointer correctly") {
   int userData = 42;
   int *receivedPointer = nullptr;
   Watchdog watchdog(
-      [&](void *ptr) { receivedPointer = static_cast<int *>(ptr); },
+      [&](void *ptr) { receivedPointer = static_cast<int *>(ptr); }, &userData,
       std::chrono::milliseconds(100));
 
-  watchdog.setUserPointer(&userData);
   watchdog.start();
   std::this_thread::sleep_for(
       std::chrono::milliseconds(150)); // Wait longer than timeout.
@@ -75,7 +74,7 @@ TEST_CASE("Watchdog handles user pointer correctly") {
 
 TEST_CASE("Watchdog stops immediately when requested") {
   bool callbackCalled = false;
-  Watchdog watchdog([&](void *) { callbackCalled = true; },
+  Watchdog watchdog([&](void *) { callbackCalled = true; }, nullptr,
                     std::chrono::milliseconds(100));
 
   SUBCASE("Stop before timeout") {
@@ -99,7 +98,7 @@ TEST_CASE("Watchdog stops immediately when requested") {
 
 TEST_CASE("Watchdog handles multiple starts and stops") {
   bool callbackCalled = false;
-  Watchdog watchdog([&](void *) { callbackCalled = true; },
+  Watchdog watchdog([&](void *) { callbackCalled = true; }, nullptr,
                     std::chrono::milliseconds(100));
 
   SUBCASE("Start, stop, and start again") {
@@ -120,7 +119,7 @@ TEST_CASE("Watchdog handles multiple starts and stops") {
 
 TEST_CASE("Watchdog handles rapid resets") {
   bool callbackCalled = false;
-  Watchdog watchdog([&](void *) { callbackCalled = true; },
+  Watchdog watchdog([&](void *) { callbackCalled = true; }, nullptr,
                     std::chrono::milliseconds(100));
 
   SUBCASE("Rapid resets prevent timeout") {

@@ -3,17 +3,16 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
-#include <functional>
 #include <mutex>
 #include <stop_token>
 #include <thread>
 
-Watchdog::Watchdog(std::function<void(void *)> callback,
+Watchdog::Watchdog(std::function<void(void *)> callback, void *userPointer,
                    std::chrono::duration<double> timeout)
     : _timeout(timeout) {
   _running.store(false, std::memory_order_release);
   _callback = callback;
-  _userPtr = nullptr;
+  _userPtr = userPointer;
   _thread = std::jthread([this](std::stop_token st) { _watchdogLoop(st); });
 }
 
@@ -62,7 +61,5 @@ void Watchdog::_watchdogTick() {
     stop();
   }
 }
-
-void Watchdog::setUserPointer(void *ptr) { _userPtr = ptr; }
 
 void *Watchdog::getUserPointer() { return _userPtr; }

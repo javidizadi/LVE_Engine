@@ -23,13 +23,12 @@ private:
   void _watchdogTick();
 
 public:
-  Watchdog(std::function<void(void *)> callback,
-           std::chrono::duration<double> duration);
+  Watchdog(std::function<void(void *)> callback, void *userPointer,
+           std::chrono::duration<double> timeout);
   ~Watchdog();
   void start();
   void stop();
   void reset();
 
-  void setUserPointer(void *);
   void *getUserPointer();
 };
