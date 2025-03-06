@@ -3,12 +3,14 @@
 #include "../watchdog.hpp"
 #include "window_event_interface.hpp"
 #include <GLFW/glfw3.h>
+#include <memory>
 
 namespace lve {
 
 enum WindowEvents {
   onKeyPress,
   onFramebufferResized,
+  onFramebufferResizeDone,
   onWindowResized,
   onMouseButton,
   onWindowRefresh,
@@ -20,7 +22,8 @@ private:
   WindowEventInterface *interface;
   GLFWwindow *glfwWindow;
 
-  Watchdog resizeWatchdog;
+  bool onFramebufferResizeDoneEnabled;
+  std::unique_ptr<Watchdog> _resizeWatchdogPtr;
 
   static void resizeWatchdogCallback(void *);
   static WindowEventManager *getWindowManagerInstance(GLFWwindow *window);

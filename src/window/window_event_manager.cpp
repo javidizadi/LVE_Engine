@@ -2,14 +2,12 @@
 #include "window_event_interface.hpp"
 #include <GLFW/glfw3.h>
 #include <chrono>
+#include <memory>
 
 namespace lve {
 WindowEventManager::WindowEventManager(GLFWwindow *glfwWindow,
                                        WindowEventInterface *interface)
-    : glfwWindow(glfwWindow), interface(interface),
-      resizeWatchdog(resizeWatchdogCallback, std::chrono::milliseconds(100)) {
-  resizeWatchdog.setUserPointer(interface);
-}
+    : glfwWindow(glfwWindow), interface(interface) {}
 
 WindowEventManager *
 WindowEventManager::getWindowManagerInstance(GLFWwindow *window) {
@@ -20,7 +18,8 @@ WindowEventManager::getWindowManagerInstance(GLFWwindow *window) {
 void WindowEventManager::framebuffferResizedCallback(GLFWwindow *window,
                                                      int width, int height) {
   auto instance = getWindowManagerInstance(window);
-  instance->resizeWatchdog.start();
+  if (instance->onFramebufferResizeDoneEnabled)
+    instance->_resizeWatchdogPtr->start();
   instance->interface->onFramebufferResized(width, height);
 }
 
@@ -63,8 +62,13 @@ void WindowEventManager::enableEvent(WindowEvents event) {
     break;
 
   case WindowEvents::onFramebufferResized:
-    resizeWatchdog.setUserPointer(this);
     glfwSetFramebufferSizeCallback(glfwWindow, framebuffferResizedCallback);
+    break;
+
+  case lve::WindowEvents::onFramebufferResizeDone:
+    _resizeWatchdogPtr = std::make_unique<Watchdog>(
+        resizeWatchdogCallback, this, std::chrono::milliseconds(100));
+    onFramebufferResizeDoneEnabled = true;
     break;
 
   case WindowEvents::onMouseButton:
@@ -89,6 +93,11 @@ void WindowEventManager::disableEvent(WindowEvents event) {
 
   case WindowEvents::onFramebufferResized:
     glfwSetFramebufferSizeCallback(glfwWindow, nullptr);
+    break;
+
+  case lve::WindowEvents::onFramebufferResizeDone:
+    onFramebufferResizeDoneEnabled = false;
+    _resizeWatchdogPtr.reset();
     break;
 
   case WindowEvents::onMouseButton:
