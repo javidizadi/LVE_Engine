@@ -14,13 +14,13 @@
 FirstApp::FirstApp()
     : window(width, height, "VULKAN FUKIN TRIANGLE", this), device(window),
       swapChain(device, window.getExtent()),
-      resizeWatchdog(resizeWatchdogCallback, std::chrono::milliseconds(1000)),
+      resizeWatchdog(resizeWatchdogCallback, this,
+                     std::chrono::milliseconds(1000)),
       resizeInProgress(false) {
   loadModels();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
-  resizeWatchdog.setUserPointer(this);
 }
 
 FirstApp::~FirstApp() {
